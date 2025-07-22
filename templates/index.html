@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lost & Found CCTV Tracker</title>
+    <style>
+        /* Keep your original styles */
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+        }
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background: #2980b9;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <h1>Lost & Found CCTV Tracker</h1>
+
+    <form method="POST" enctype="multipart/form-data" onsubmit="showLoading()">
+        <div>
+            <label>Image of Lost Item:</label>
+            <input type="file" name="image" accept="image/*" required>
+        </div>
+        <div>
+            <label>CCTV Video:</label>
+            <input type="file" name="video" accept="video/*" required>
+        </div>
+        <button type="submit">Find My Item</button>
+    </form>
+
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <p>Processing video... This may take a few minutes.</p>
+    </div>
+
+    <script>
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
