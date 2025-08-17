@@ -1,125 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Results - Lost & Found CCTV Tracker</title>
-    <style>
-        /* Keep only the styles used in result display */
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            margin: 0;
-            padding: 20px;
-        }
-        h1, h2, h3 {
-            color: #2c3e50;
-            text-align: center;
-        }
-        .results {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 800px;
-            margin: 20px auto;
-        }
-        .media-container {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .media-container img, .media-container video {
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            max-width: 100%;
-        }
-        .timestamps {
-            list-style: none;
-            padding: 0;
-        }
-        .timestamps li {
-            background: #f8f9fa;
-            padding: 10px;
-            margin-bottom: 5px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        .timestamps li:hover {
-            background: #e9ecef;
-        }
-        .bounding-box {
-            position: absolute;
-            border: 3px solid #00b894;
-            background: rgba(0, 184, 148, 0.2);
-        }
-        .video-container {
-            position: relative;
-            display: inline-block;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='result.css') }}">
 </head>
-<body>
-    <h1>Tracking Results</h1>
 
-    <div class="results">
-        <div class="media-container">
-            <div>
-                <h3>Your Image</h3>
-                <img src="{{ image_url }}" width="300">
+<body id="top">
+
+    <div class="background-grid"></div>
+
+    <div class="background-animation">
+        <div class="scan-line"></div>
+        <div class="radial-pulse"></div>
+
+
+        <div class="lens-effect lens-1"></div>
+        <div class="lens-effect lens-2"></div>
+        <div class="lens-effect lens-3"></div>
+    </div>
+
+
+    <header>
+        <a href="{{ url_for('index') }}" class="logo-container">
+            <div class="logo">
+                <i class="fas fa-camera-retro"></i>
             </div>
-            <div>
-                <h3>CCTV Footage</h3>
+            <div class="logo-text">SENTINEL</div>
+        </a>
+        <a href="{{ url_for('index') }}" class="nav-btn">
+            <i class="fas fa-home"></i> <span>Home</span>
+        </a>
+    </header>
+
+
+    <section class="hero">
+        <h1>Tracking Results</h1>
+        <p>Your item has been analyzed across the CCTV footage. See where and when it was detected.</p>
+    </section>
+
+
+    <div class="results-card">
+        <div class="card-title">
+            <h2>Item Detection Results</h2>
+            <p>Visual analysis of your item across the CCTV footage</p>
+        </div>
+
+        <div class="media-container">
+            <div class="media-panel">
+                <h3><i class="fas fa-image"></i> Your Item</h3>
+                <img src="{{ image_url }}" alt="Uploaded item" id="item-image">
+            </div>
+
+            <div class="media-panel">
+                <h3><i class="fas fa-video"></i> CCTV Footage</h3>
                 <div class="video-container">
-                    <video id="result-video" src="{{ video_url }}" controls width="500"></video>
+                    <video id="result-video" controls data-orig-width="{{ video_dims[0] }}"
+                        data-orig-height="{{ video_dims[1] }}">
+                        <source src="{{ video_url }}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                    <div class="bounding-box"></div>
                 </div>
             </div>
         </div>
 
-        {% if timestamps %}
-        <h3>Found at these times:</h3>
-        <ul class="timestamps">
-            {% for ts in timestamps %}
-            <li onclick="showMatch({{ ts.time }}, {{ ts.position }}, {{ ts.similarity }})">
-                ⏱️ {{ "%.1f"|format(ts.time) }} sec | 
-                🔍 {{ "%.0f"|format(ts.similarity * 100) }}% match | 
-                📍 Position: ({{ ts.position[0] }}, {{ ts.position[1] }})
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>No matches found.</p>
-        {% endif %}
+        <div class="timestamps-container">
+            <h3 class="timestamps-title">Detection Timestamps</h3>
+            <ul class="timestamps">
+                {% if timestamps %}
+                {% for ts in timestamps %}
+                <li class="timestamp-item {% if loop.first %}active{% endif %}" data-time="{{ ts.time }}"
+                    data-bbox="{{ ts.position }}" data-similarity="{{ ts.similarity }}">
+                    <div class="timestamp-info">
+                        <div class="timestamp-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="timestamp-details">
+                            <div class="timestamp-time">{{ ts.time|round(1) }} seconds</div>
+                            <div class="timestamp-position">Position: ({{ ts.position[0]|int }}, {{ ts.position[1]|int
+                                }}) to ({{ ts.position[2]|int }}, {{ ts.position[3]|int }})</div>
+                        </div>
+                    </div>
+                    <div class="similarity-badge">{{ (ts.similarity * 100)|round|int }}% match</div>
+                </li>
+                {% endfor %}
+                {% else %}
+                <div class="no-matches">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>No Matches Found</h3>
+                    <p>We couldn't find any matches for your item in the footage.</p>
+                </div>
+                {% endif %}
+            </ul>
+        </div>
     </div>
 
-    <script>
-        function showMatch(time, bbox, similarity) {
-            document.querySelectorAll('.bounding-box').forEach(el => el.remove());
 
-            const video = document.getElementById('result-video');
-            video.currentTime = time;
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo-section">
+                <div class="footer-logo">
+                    <div class="logo-text">HACKERSPACE
+                        <p> Where AI Meets Development</p>
+                    </div>
+                    <p>We're the coding community of MSIT, a collective of developers, designers, and innovators. We
+                        don't just follow trends—we build them. Whether your passion is AI/ML, web development, design,
+                        or mastering DSA, this is where the driven come to create.</p>
+                </div>
+            </div>
 
-            const box = document.createElement('div');
-            box.className = 'bounding-box';
-            box.style.left = `${bbox[0]}px`;
-            box.style.top = `${bbox[1]}px`;
-            box.style.width = `${bbox[2] - bbox[0]}px`;
-            box.style.height = `${bbox[3] - bbox[1]}px`;
+            <div class="footer-contact-section">
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <ul class="footer-links">
+                        <li><a href="mailto:hackerspacemsit@gmail.com"><i class="fas fa-envelope"></i>
+                                hackerspacemsit@gmail.com</a></li>
+                        <li><a
+                                href="https://www.instagram.com/_hackerspace.msit?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="><i
+                                    class="fa-brands fa-square-instagram"></i> @_hackerspace.msit</a></li>
+                        <li><a href="https://www.facebook.com/profile.php?id=100091680046825"><i
+                                    class="fa-brands fa-facebook"></i> HackerSpace</a></li>
+                        <li><a href="https://www.linkedin.com/company/hackerspace-msit"><i
+                                    class="fa-brands fa-linkedin"></i> Hackerspace-msit</a></li>
+                        <li><a href="https://maps.app.goo.gl/bMQJnske9UQNP1uy9"><i class="fas fa-location-dot"></i>
+                                Uchhepota, Kolkata, West Bengal 700150</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
-            document.querySelector('.video-container').appendChild(box);
-            video.scrollIntoView({ behavior: 'smooth' });
-        }
 
-        {% if timestamps %}
-        window.addEventListener('load', () => {
-            const firstMatch = {{ timestamps[0]|tojson }};
-            if (firstMatch) {
-                showMatch(firstMatch.time, firstMatch.position, firstMatch.similarity);
-            }
-        });
-        {% endif %}
-    </script>
+        <div class="copyright">
+            <p>&copy; 2025 HACKERSPACE. All rights reserved. Sentinel, Lost & Found CCTV Tracker.</p>
+        </div>
+    </footer>
+    <script src="{{ url_for('static', filename='result.js') }}"></script>
 </body>
+
 </html>

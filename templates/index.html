@@ -4,95 +4,143 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lost & Found CCTV Tracker</title>
-    <style>
-        /* Keep your original styles */
-        body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
-            margin: 0;
-            padding: 20px;
-        }
-        h1 {
-            color: #2c3e50;
-            text-align: center;
-        }
-        form {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-            font-weight: bold;
-        }
-        input[type="file"] {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-        button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            width: 100%;
-        }
-        button:hover {
-            background: #2980b9;
-        }
-        .loading {
-            display: none;
-            text-align: center;
-            margin: 20px 0;
-        }
-        .spinner {
-            border: 5px solid #f3f3f3;
-            border-top: 5px solid #3498db;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <h1>Lost & Found CCTV Tracker</h1>
+<body id="top">
 
-    <form method="POST" enctype="multipart/form-data" onsubmit="showLoading()">
-        <div>
-            <label>Image of Lost Item:</label>
-            <input type="file" name="image" accept="image/*" required>
-        </div>
-        <div>
-            <label>CCTV Video:</label>
-            <input type="file" name="video" accept="video/*" required>
-        </div>
-        <button type="submit">Find My Item</button>
-    </form>
+    <div class="background-grid"></div>
+    
+    <div class="background-animation">
+        <div class="scan-line"></div>
+        <div class="radial-pulse"></div>
+        
 
-    <div id="loading" class="loading">
-        <div class="spinner"></div>
-        <p>Processing video... This may take a few minutes.</p>
+        <div class="lens-effect lens-1"></div>
+        <div class="lens-effect lens-2"></div>
+        <div class="lens-effect lens-3"></div>
+        
+        <div class="floating-item">
+            <i class="fas fa-key"></i>
+        </div>
+        <div class="floating-item">
+            <i class="fas fa-wallet"></i>
+        </div>
+        <div class="floating-item">
+            <i class="fas fa-mobile-alt"></i>
+        </div>
     </div>
 
-    <script>
-        function showLoading() {
-            document.getElementById('loading').style.display = 'block';
-        }
-    </script>
+    <header>
+        <a href="#top" class="logo-container">
+            <div class="logo">
+                <i class="fas fa-camera-retro"></i>
+            </div>
+            <div class="logo-text">SENTINEL</div>
+        </a>
+        <a href="#top" class="nav-btn">
+            <i class="fas fa-home"></i> <span>Home</span>
+        </a>
+    </header>
+
+
+    <section class="hero">
+        <h1>Lost & Found CCTV Tracker</h1>
+        <p>Upload an image of your lost item and CCTV footage to track its location with our advanced AI-powered system. Recover your valuables with precision and efficiency.</p>
+    </section>
+
+
+    <div class="main-card">
+        <div class="card-title">
+            <h2>Track Your Item</h2>
+            <p>Upload the required files to initiate the tracking process</p>
+        </div>
+        
+        <form id="tracking-form" method="POST" enctype="multipart/form-data" action="/">
+            <div class="form-container">
+
+                <div class="upload-section">
+                    <div class="upload-header">
+                        <div class="upload-icon">
+                            <i class="fas fa-image"></i>
+                        </div>
+                        <h3>Item Image</h3>
+                    </div>
+                    <div class="file-input-container">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop or click to upload item image</p>
+                        <span>Choose File</span>
+                        <input type="file" name="image" accept="image/*" required id="image-input">
+                    </div>
+                    <div class="file-name" id="image-name">No file selected</div>
+                </div>
+                
+                
+                <div class="upload-section">
+                    <div class="upload-header">
+                        <div class="upload-icon">
+                            <i class="fas fa-video"></i>
+                        </div>
+                        <h3>CCTV Footage</h3>
+                    </div>
+                    <div class="file-input-container">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Drag & drop or click to upload CCTV video</p>
+                        <span>Choose File</span>
+                        <input type="file" name="video" accept="video/*" required id="video-input">
+                    </div>
+                    <div class="file-name" id="video-name">No file selected</div>
+                </div>
+                
+                
+                <div class="submit-container">
+                    <button type="submit" class="submit-btn" id="submit-btn">
+                        <i class="fas fa-search"></i> Find My Item
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    
+    <div id="loading" class="loading">
+        <div class="spinner"></div>
+        <h3>Processing Footage</h3>
+        <p>Analyzing video content for item matches<span class="dots"></span></p>
+    </div>
+    
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo-section">
+                <div class="footer-logo">
+                    <div class="logo-text">HACKERSPACE
+                        <p> Where AI Meets Development</p>
+                    </div>
+                    <p>We're the coding community of MSIT, a collective of developers, designers, and innovators. We don't just follow trends—we build them. Whether your passion is AI/ML, web development, design, or mastering DSA, this is where the driven come to create.</p>
+                </div>
+            </div>
+            
+            <div class="footer-contact-section">
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <ul class="footer-links">
+                        <li><a href="mailto:hackerspacemsit@gmail.com"><i class="fas fa-envelope"></i> hackerspacemsit@gmail.com</a></li>
+                        <li><a href="https://www.instagram.com/_hackerspace.msit?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="><i class="fa-brands fa-square-instagram"></i> @_hackerspace.msit</a></li>
+                        <li><a href="https://www.facebook.com/profile.php?id=100091680046825"><i class="fa-brands fa-facebook"></i> HackerSpace</a></li>
+                        <li><a href="https://www.linkedin.com/company/hackerspace-msit"><i class="fa-brands fa-linkedin"></i> Hackerspace-msit</a></li>
+                        <li><a href="https://maps.app.goo.gl/bMQJnske9UQNP1uy9"><i class="fas fa-location-dot"></i> Uchhepota, Kolkata, West Bengal 700150</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+
+        <div class="copyright">
+            <p>&copy; 2025 HACKERSPACE. All rights reserved. Sentinel, Lost & Found CCTV Tracker.</p>
+        </div>
+    </footer>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
 </body>
 </html>
