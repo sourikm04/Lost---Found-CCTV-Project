@@ -12,16 +12,16 @@ import threading
 from queue import Queue
 
 app = Flask(__name__)
-app.secret_key = 'your_secret_key'  # Required for session
+app.secret_key = 'test_key'
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg', 'jpeg', 'mp4'}
 
-# Load models
+
 yolo_model = YOLO('yolov8n.pt')
 mobilenet = MobileNetV2(weights='imagenet', include_top=True)
 feature_model = Model(inputs=mobilenet.input, outputs=mobilenet.layers[-2].output)
 
-# Queue for storing results
+
 result_queue = Queue()
 
 def allowed_file(filename):
@@ -42,21 +42,43 @@ def compare_images(img1, img2):
     emb2 = get_embedding(img2)
     return cosine_similarity(emb1, emb2)[0][0]
 
-def process_frame(frame, frame_count, fps, image_path):
+def process_frame(frame, frame_count, fps, image_path, orig_width, orig_height):
     if frame_count % int(fps) == 0:
+        
         small_frame = cv2.resize(frame, (640, 360))
+        
+        
+        scale_x = orig_width / 640
+        scale_y = orig_height / 360
+        
         results = yolo_model(small_frame, verbose=False)
         for result in results:
             for box in result.boxes:
                 if box.conf.item() > 0.5:
+                    
                     x1, y1, x2, y2 = map(int, box.xyxy[0].tolist())
-                    cropped = small_frame[y1:y2, x1:x2]
+                    
+                    
+                    x1_orig = int(x1 * scale_x)
+                    y1_orig = int(y1 * scale_y)
+                    x2_orig = int(x2 * scale_x)
+                    y2_orig = int(y2 * scale_y)
+                    
+                    
+                    cropped = frame[y1_orig:y2_orig, x1_orig:x2_orig]
+                    
+                    
+                    if cropped.size == 0:
+                        continue
+                        
+                    
                     similarity = compare_images(cv2.imread(image_path), cropped)
+                    
                     if similarity > 0.7:
                         result_queue.put({
                             'time': frame_count / fps,
                             'similarity': float(similarity),
-                            'position': [x1, y1, x2, y2]
+                            'position': [x1_orig, y1_orig, x2_orig, y2_orig]
                         })
 
 def process_video(video_path, image_path):
@@ -64,14 +86,22 @@ def process_video(video_path, image_path):
     fps = cap.get(cv2.CAP_PROP_FPS)
     frame_count = 0
     threads = []
+    
+    
+    orig_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    orig_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    
+    
+    session['video_dims'] = (orig_width, orig_height)
 
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
+            
         t = threading.Thread(
             target=process_frame,
-            args=(frame, frame_count, fps, image_path)
+            args=(frame, frame_count, fps, image_path, orig_width, orig_height)
         )
         t.start()
         threads.append(t)
@@ -86,7 +116,8 @@ def process_video(video_path, image_path):
         timestamps.append(result_queue.get())
     return timestamps
 
-@app.route('/')
+
+@app.route('/', methods=['GET', 'POST'])
 @app.route('/index', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -107,7 +138,6 @@ def index():
             image_file.save(image_path)
             video_file.save(video_path)
 
-            # Save paths to session for result route
             session['image_path'] = image_path
             session['video_path'] = video_path
 
@@ -119,6 +149,7 @@ def index():
 def result():
     image_path = session.get('image_path')
     video_path = session.get('video_path')
+    video_dims = session.get('video_dims', (0, 0))
 
     if not image_path or not video_path:
         return redirect(url_for('index'))
@@ -129,6 +160,7 @@ def result():
                            image_url=image_path,
                            video_url=video_path,
                            timestamps=timestamps,
+                           video_dims=video_dims,
                            show_results=True)
 
 if __name__ == '__main__':
